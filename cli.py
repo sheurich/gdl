@@ -11,6 +11,7 @@ import click
 from fetcher import Fetcher, FetcherConfig
 from formatter import write_mbox
 from parser import parse_thread, parse_thread_list, ThreadData
+from urllib.parse import urljoin
 
 
 @click.command()
@@ -35,8 +36,9 @@ def cli(group_url: str, output_file: str, limit: int | None, delay: float, user_
             for thread_url in parse_thread_list(list_html):
                 if limit and len(threads) >= limit:
                     break
-                logging.info("Fetching thread %s", thread_url)
-                thread_html = await fetcher.fetch_playwright(thread_url)
+                full_url = urljoin(group_url, thread_url)
+                logging.info("Fetching thread %s", full_url)
+                thread_html = await fetcher.fetch_playwright(full_url)
                 threads.append(parse_thread(thread_html))
         write_mbox(threads, Path(output_file), group_email="group@example.com", text_format=text_format)
         logging.info("Saved %d threads to %s", len(threads), output_file)

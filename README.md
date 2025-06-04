@@ -16,6 +16,9 @@ Common options include:
 - `--delay SECONDS` – polite delay between requests.
 - `--text-format {html,markdown,plaintext}` – format of message bodies.
 
+After installing requirements, run `playwright install` to download the
+browser binaries used by Playwright.
+
 **Disclaimer:** Google’s robots.txt disallows automated access to `/groups` and
 scraping may violate Google’s Terms of Service. This tool is provided for
 educational purposes only.
