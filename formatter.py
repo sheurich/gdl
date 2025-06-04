@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import mailbox
 import time
-from email.mime.text import MIMEText
+from email.message import EmailMessage
 from pathlib import Path
 from typing import Iterable
 
@@ -30,8 +30,10 @@ def _make_msg(message: MessageData, group_email: str, text_format: str) -> mailb
     elif text_format == "plaintext":
         body = html2text(body)
         body = body.replace("*", "")
-    part = MIMEText(body, "html" if text_format == "html" else "plain", "utf-8")
-    msg.set_payload(part.get_payload())
+    content_type = "text/html" if text_format == "html" else "text/plain"
+    msg["Content-Type"] = f"{content_type}; charset=utf-8"
+    msg["Content-Transfer-Encoding"] = "8bit"
+    msg.set_payload(body)
     return msg
 
 
