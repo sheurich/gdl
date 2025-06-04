@@ -36,7 +36,8 @@ def cli(group_url: str, output_file: str, limit: int | None, delay: float, user_
             for thread_url in parse_thread_list(list_html):
                 if limit and len(threads) >= limit:
                     break
-                full_url = urljoin(group_url, thread_url)
+                base = group_url if group_url.endswith("/") else group_url + "/"
+                full_url = urljoin(base, thread_url)
                 logging.info("Fetching thread %s", full_url)
                 thread_html = await fetcher.fetch_playwright(full_url)
                 threads.append(parse_thread(thread_html))

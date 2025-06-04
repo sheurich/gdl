@@ -17,7 +17,14 @@ logger = logging.getLogger(__name__)
 
 # Example CSS selectors. These will likely need to be updated for real pages.
 # Selectors tuned for the current Google Groups frontend.
-DS6_RE = re.compile(r"AF_initDataCallback\(\{key: 'ds:6'.*?data:(\[.*?\])", re.DOTALL)
+# The ds:6 block contains JSON data embedded in a script tag. The "data:" array
+# is followed by a "sideChannel:" object. We capture everything up to that
+# boundary so the JSON string can be loaded reliably even when it spans many
+# lines.
+DS6_RE = re.compile(
+    r"AF_initDataCallback\(\{key: 'ds:6',[^,]*,\s*data:(\[.*?\])\s*,\s*sideChannel",
+    re.DOTALL,
+)
 
 
 @dataclass
@@ -47,8 +54,10 @@ def _extract_ds6(html: str) -> list:
 def parse_thread_list(html: str) -> Iterable[str]:
     """Return relative paths to threads extracted from a listing page."""
     data = _extract_ds6(html)
-    for entry in data[2]:
-        yield f"c/{entry[1]}"
+    threads = data[2]
+    for pair in threads:
+        slug = pair[0][1]
+        yield f"c/{slug}"
 
 
 
