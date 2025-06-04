@@ -1,0 +1,48 @@
+"""Command line interface for scraping Google Groups."""
+from __future__ import annotations
+
+import asyncio
+import logging
+from pathlib import Path
+from typing import List
+
+import click
+
+from fetcher import Fetcher, FetcherConfig
+from formatter import write_mbox
+from parser import parse_thread, parse_thread_list, ThreadData
+
+
+@click.command()
+@click.argument("group_url")
+@click.option("--output", "output_file", default="group_archive.mbox", type=click.Path(), help="Output mbox file path")
+@click.option("--limit", type=int, help="Limit number of threads")
+@click.option("--delay", type=float, default=1.0, show_default=True, help="Delay between requests in seconds")
+@click.option("--user-agent", default=None, help="Custom User-Agent string")
+@click.option("--max-retries", type=int, default=3, show_default=True, help="Max retries on request failures")
+@click.option("--headless/--no-headless", default=True, show_default=True, help="Run browser in headless mode")
+@click.option("--text-format", type=click.Choice(["html", "markdown", "plaintext"]), default="html", show_default=True, help="Format for message bodies")
+@click.option("--log-level", default="INFO", show_default=True, help="Logging level")
+def cli(group_url: str, output_file: str, limit: int | None, delay: float, user_agent: str | None, max_retries: int, headless: bool, text_format: str, log_level: str) -> None:
+    """Scrape a public Google Group and output an mbox file."""
+    logging.basicConfig(level=getattr(logging, log_level.upper(), logging.INFO), format="%(levelname)s: %(message)s")
+    config = FetcherConfig(delay=delay, user_agent=user_agent or FetcherConfig.user_agent, max_retries=max_retries, headless=headless)
+
+    async def run() -> None:
+        threads: List[ThreadData] = []
+        async with Fetcher(config) as fetcher:
+            list_html = await fetcher.fetch_playwright(group_url)
+            for thread_url in parse_thread_list(list_html):
+                if limit and len(threads) >= limit:
+                    break
+                logging.info("Fetching thread %s", thread_url)
+                thread_html = await fetcher.fetch_playwright(thread_url)
+                threads.append(parse_thread(thread_html))
+        write_mbox(threads, Path(output_file), group_email="group@example.com", text_format=text_format)
+        logging.info("Saved %d threads to %s", len(threads), output_file)
+
+    asyncio.run(run())
+
+
+if __name__ == "__main__":
+    cli()
