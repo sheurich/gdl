@@ -33,7 +33,7 @@ def _make_msg(message: MessageData, group_email: str, text_format: str) -> mailb
     content_type = "text/html" if text_format == "html" else "text/plain"
     msg["Content-Type"] = f"{content_type}; charset=utf-8"
     msg["Content-Transfer-Encoding"] = "8bit"
-    msg.set_payload(body)
+    msg.set_payload(body.encode("utf-8"))
     return msg
 
 
