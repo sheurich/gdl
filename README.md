@@ -16,8 +16,24 @@ Common options include:
 - `--delay SECONDS` – polite delay between requests.
 - `--text-format {html,markdown,plaintext}` – format of message bodies.
 
-After installing requirements, run `playwright install` to download the
-browser binaries used by Playwright.
+### Setup
+
+Install the Python packages using [`uv`](https://github.com/astral-sh/uv):
+
+```bash
+# install uv if not already present
+pip install uv
+
+# install playwright and browser binaries
+uv tool install playwright
+playwright install
+```
+
+Run the scraper with uv so dependencies are resolved from `requirements.txt`:
+
+```bash
+uv run --with-requirements=requirements.txt cli.py <GROUP_URL>
+```
 
 **Disclaimer:** Google’s robots.txt disallows automated access to `/groups` and
 scraping may violate Google’s Terms of Service. This tool is provided for
