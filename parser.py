@@ -11,27 +11,23 @@ from dataclasses import dataclass
 from typing import Iterable, List, Optional
 import re
 
-from bs4 import BeautifulSoup
+import json
 
 logger = logging.getLogger(__name__)
 
 # Example CSS selectors. These will likely need to be updated for real pages.
 # Selectors tuned for the current Google Groups frontend.
-THREAD_URL_RE = re.compile(r'/(?:[^/]+/)?c/[A-Za-z0-9_-]+')
-MESSAGE_CONTAINER_SELECTOR = 'section[data-doc-id]'
-SENDER_SELECTOR = 'h3'
-TIMESTAMP_SELECTOR = 'span.zX2W9c'
-BODY_SELECTOR = 'div[style*=\"word-wrap:break-word\"]'
+DS6_RE = re.compile(r"AF_initDataCallback\(\{key: 'ds:6'.*?data:(\[.*?\])", re.DOTALL)
 
 
 @dataclass
 class MessageData:
     message_id: str
     sender: str
-    timestamp: str
+    timestamp: float
     subject: str
     body_html: str
-    parent_id: Optional[str]
+    parent_id: Optional[str] = None
 
 
 @dataclass
@@ -41,33 +37,44 @@ class ThreadData:
     messages: List[MessageData]
 
 
-def parse_thread_list(html: str) -> Iterable[str] :
+def _extract_ds6(html: str) -> list:
+    match = DS6_RE.search(html)
+    if not match:
+        raise ValueError("ds:6 block not found")
+    return json.loads(match.group(1))
+
+
+def parse_thread_list(html: str) -> Iterable[str]:
     """Return relative paths to threads extracted from a listing page."""
-    for match in THREAD_URL_RE.finditer(html):
-        yield match.group(0)
+    data = _extract_ds6(html)
+    for entry in data[2]:
+        yield f"c/{entry[1]}"
 
 
 
 def parse_thread(html: str) -> ThreadData:
     """Parse a single thread page and return structured data."""
-    soup = BeautifulSoup(html, 'lxml')
-    subject = soup.title.string if soup.title else ''
-    canonical = soup.find('link', rel='canonical')
-    thread_id = canonical['href'].rstrip('/').split('/')[-1] if canonical else 'unknown'
-
+    data = _extract_ds6(html)
+    thread_id = data[2][0][0][0][1]
+    subject = data[2][0][0][0][5]
     messages: List[MessageData] = []
-    for container in soup.select(MESSAGE_CONTAINER_SELECTOR):
-        msg_id = container.get('data-message-id', '')
-        sender_el = container.select_one(SENDER_SELECTOR)
-        timestamp_el = container.select_one(TIMESTAMP_SELECTOR)
-        body_el = container.select_one(BODY_SELECTOR)
-        msg = MessageData(
-            message_id=msg_id,
-            sender=sender_el.get_text(strip=True) if sender_el else '' ,
-            timestamp=timestamp_el.get_text(strip=True) if timestamp_el else '' ,
-            subject=subject,
-            body_html=str(body_el) if body_el else '' ,
-            parent_id=None,
+    pairs = data[2][0][0]
+    for i in range(0, len(pairs), 2):
+        head = pairs[i]
+        if i + 1 >= len(pairs):
+            break
+        body = pairs[i + 1]
+        message_id = head[1]
+        sender = head[2][0][0]
+        timestamp = float(head[7][0])
+        body_html = body[1][0][1][1]
+        messages.append(
+            MessageData(
+                message_id=message_id,
+                sender=sender,
+                timestamp=timestamp,
+                subject=head[5],
+                body_html=body_html,
+            )
         )
-        messages.append(msg)
     return ThreadData(thread_id=thread_id, subject=subject, messages=messages)

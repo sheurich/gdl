@@ -1,7 +1,6 @@
 """Convert parsed Google Group data into an mbox file."""
 from __future__ import annotations
 
-import email
 import mailbox
 import time
 from email.mime.text import MIMEText
@@ -15,7 +14,8 @@ from parser import MessageData, ThreadData
 
 def _make_msg(message: MessageData, group_email: str, text_format: str) -> mailbox.mboxMessage:
     msg = mailbox.mboxMessage()
-    timestamp = time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())
+    ts = message.timestamp
+    timestamp = time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime(ts))
     msg.set_unixfrom(f"From {message.sender} {timestamp}")
     msg["From"] = message.sender
     msg["To"] = group_email
