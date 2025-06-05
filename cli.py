@@ -11,7 +11,18 @@ import click
 from fetcher import Fetcher, FetcherConfig
 from formatter import write_mbox
 from parser import parse_thread, parse_thread_list, ThreadData
-from urllib.parse import urljoin
+from urllib.parse import urlparse, urljoin
+
+
+def make_full_url(base_url: str, thread_path: str) -> str:
+    """Join a thread path to the group URL."""
+    if thread_path.startswith("http://") or thread_path.startswith("https://"):
+        return thread_path
+    parsed = urlparse(base_url)
+    if thread_path.startswith("/"):
+        return f"{parsed.scheme}://{parsed.netloc}{thread_path}"
+    base = base_url if base_url.endswith("/") else base_url + "/"
+    return urljoin(base, thread_path)
 
 
 @click.command()
@@ -26,8 +37,10 @@ from urllib.parse import urljoin
 @click.option("--log-level", default="INFO", show_default=True, help="Logging level")
 def cli(group_url: str, output_file: str, limit: int | None, delay: float, user_agent: str | None, max_retries: int, headless: bool, text_format: str, log_level: str) -> None:
     """Scrape a public Google Group and output an mbox file."""
-    logging.basicConfig(level=getattr(logging, log_level.upper(), logging.INFO), format="%(levelname)s: %(message)s")
-    config = FetcherConfig(delay=delay, user_agent=user_agent or FetcherConfig.user_agent, max_retries=max_retries, headless=headless)
+    logging.basicConfig(level=getattr(logging, log_level.upper(
+    ), logging.INFO), format="%(levelname)s: %(message)s")
+    config = FetcherConfig(delay=delay, user_agent=user_agent or FetcherConfig.user_agent,
+                           max_retries=max_retries, headless=headless)
 
     async def run() -> None:
         threads: List[ThreadData] = []
@@ -36,12 +49,12 @@ def cli(group_url: str, output_file: str, limit: int | None, delay: float, user_
             for thread_url in parse_thread_list(list_html):
                 if limit and len(threads) >= limit:
                     break
-                base = group_url if group_url.endswith("/") else group_url + "/"
-                full_url = urljoin(base, thread_url)
+                full_url = make_full_url(group_url, thread_url)
                 logging.info("Fetching thread %s", full_url)
                 thread_html = await fetcher.fetch_playwright(full_url)
                 threads.append(parse_thread(thread_html))
-        write_mbox(threads, Path(output_file), group_email="group@example.com", text_format=text_format)
+        write_mbox(threads, Path(output_file),
+                   group_email="group@example.com", text_format=text_format)
         logging.info("Saved %d threads to %s", len(threads), output_file)
 
     asyncio.run(run())

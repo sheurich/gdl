@@ -852,6 +852,7 @@ The repository now contains a minimal proof-of-concept scraper implemented in Py
 - `parser.py` – parses Google Groups pages, extracting threads and messages from the ds:6 data structure.
 - `formatter.py` – converts parsed messages into an mbox file via the `mailbox` module.
 - `README.md` – explains setup using `uv`, installing Playwright, and notes the scraping disclaimer.
+- `make_full_url` helper in `cli.py` constructs absolute thread URLs so Playwright receives valid addresses.
 
 This code can fetch a small number of threads and produce an mbox archive, but selectors and error handling will likely need refinement as Google updates the site.
 
@@ -871,6 +872,14 @@ After installing dependencies you can run a quick smoke test:
 uv tool install playwright
 playwright install
 uv run --with-requirements=requirements.txt cli.py <GROUP_URL> --limit 1 --headless
+```
+
+This writes `group_archive.mbox` in the current directory. To verify that core
+helpers still behave as expected, run the unit tests:
+
+```bash
+pip install -r requirements.txt  # or use uv
+pytest
 ```
 
 A tiny pytest suite is provided for core parsing helpers:
