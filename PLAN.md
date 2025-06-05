@@ -854,11 +854,11 @@ The repository now contains a minimal proof-of-concept scraper implemented in Py
 - `README.md` – explains setup using `uv`, installing Playwright, and notes the scraping disclaimer.
 - `make_full_url` helper in `cli.py` constructs absolute thread URLs so Playwright receives valid addresses.
 
-This code can fetch a small number of threads and produce an mbox archive, but selectors and error handling will likely need refinement as Google updates the site.
+This code now paginates through thread listings to fetch many threads and produces an mbox archive, but selectors and error handling will likely need refinement as Google updates the site.
 
 ### Remaining work
 
-- Improve parsing to reconstruct reply relationships and handle pagination.
+- Improve parsing to reconstruct reply relationships and handle message-level pagination.
 - Make the group email address configurable.
 - Expand polite scraping features and exception handling.
 - Add more comprehensive unit and integration tests.
