@@ -28,7 +28,13 @@ def make_full_url(base_url: str, thread_path: str) -> str:
 @click.command()
 @click.argument("group_url")
 @click.option("--output", "output_file", default="group_archive.mbox", type=click.Path(), help="Output mbox file path")
-@click.option("--limit", type=int, help="Limit number of threads")
+@click.option(
+    "--limit",
+    type=int,
+    default=None,
+    show_default="unlimited",
+    help="Limit number of threads",
+)
 @click.option("--delay", type=float, default=1.0, show_default=True, help="Delay between requests in seconds")
 @click.option("--user-agent", default=None, help="Custom User-Agent string")
 @click.option("--max-retries", type=int, default=3, show_default=True, help="Max retries on request failures")

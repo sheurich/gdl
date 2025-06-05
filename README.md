@@ -12,7 +12,7 @@ Usage: python -m cli [OPTIONS] GROUP_URL
 Common options include:
 
 - `--output PATH` – where to write the resulting mbox file.
-- `--limit N` – maximum number of threads to fetch.
+- `--limit N` – maximum number of threads to fetch (omit to fetch all).
 - `--delay SECONDS` – polite delay between requests.
 - `--text-format {html,markdown,plaintext}` – format of message bodies.
 - `--user-agent STRING` – custom User-Agent header.
