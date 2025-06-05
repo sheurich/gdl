@@ -15,6 +15,10 @@ Common options include:
 - `--limit N` – maximum number of threads to fetch.
 - `--delay SECONDS` – polite delay between requests.
 - `--text-format {html,markdown,plaintext}` – format of message bodies.
+- `--user-agent STRING` – custom User-Agent header.
+- `--max-retries N` – retry a failed request up to N times.
+- `--headless/--no-headless` – toggle headless browser mode.
+- `--log-level LEVEL` – logging verbosity (e.g. INFO, DEBUG).
 
 ### Setup
 
@@ -38,3 +42,12 @@ uv run --with-requirements=requirements.txt cli.py <GROUP_URL>
 **Disclaimer:** Google’s robots.txt disallows automated access to `/groups` and
 scraping may violate Google’s Terms of Service. This tool is provided for
 educational purposes only.
+
+### Running Tests
+
+Install the dependencies from `requirements.txt` and run `pytest`:
+
+```bash
+pip install -r requirements.txt
+pytest
+```

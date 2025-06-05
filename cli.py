@@ -45,14 +45,24 @@ def cli(group_url: str, output_file: str, limit: int | None, delay: float, user_
     async def run() -> None:
         threads: List[ThreadData] = []
         async with Fetcher(config) as fetcher:
-            list_html = await fetcher.fetch_playwright(group_url)
-            for thread_url in parse_thread_list(list_html):
+            page_token: str | None = None
+            while True:
+                url = group_url
+                if page_token:
+                    url += ("&" if "?" in group_url else "?") + f"pageToken={page_token}"
+                list_html = await fetcher.fetch_playwright(url)
+                thread_urls, page_token = parse_thread_list(list_html)
+                for thread_url in thread_urls:
+                    if limit and len(threads) >= limit:
+                        break
+                    full_url = make_full_url(group_url, thread_url)
+                    logging.info("Fetching thread %s", full_url)
+                    thread_html = await fetcher.fetch_playwright(full_url)
+                    threads.append(parse_thread(thread_html))
                 if limit and len(threads) >= limit:
                     break
-                full_url = make_full_url(group_url, thread_url)
-                logging.info("Fetching thread %s", full_url)
-                thread_html = await fetcher.fetch_playwright(full_url)
-                threads.append(parse_thread(thread_html))
+                if not page_token:
+                    break
         write_mbox(threads, Path(output_file),
                    group_email="group@example.com", text_format=text_format)
         logging.info("Saved %d threads to %s", len(threads), output_file)

@@ -51,13 +51,12 @@ def _extract_ds6(html: str) -> list:
     return json.loads(match.group(1))
 
 
-def parse_thread_list(html: str) -> Iterable[str]:
-    """Return relative paths to threads extracted from a listing page."""
+def parse_thread_list(html: str) -> tuple[list[str], str | None]:
+    """Return thread paths and a next page token from a listing page."""
     data = _extract_ds6(html)
-    threads = data[2]
-    for pair in threads:
-        slug = pair[0][1]
-        yield f"c/{slug}"
+    threads = [f"c/{pair[0][1]}" for pair in data[2]]
+    next_token = data[3] if len(data) > 3 else None
+    return threads, next_token
 
 
 
