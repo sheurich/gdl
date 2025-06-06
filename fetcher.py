@@ -25,6 +25,7 @@ DEFAULT_USER_AGENT = (
 @dataclass
 class FetcherConfig:
     delay: float = 1.0
+    load_wait: float = 2.0
     user_agent: str = DEFAULT_USER_AGENT
     max_retries: int = 3
     headless: bool = True
@@ -64,7 +65,7 @@ class Fetcher:
             try:
                 await page.goto(url, timeout=self.config.timeout, wait_until="networkidle")
                 await asyncio.sleep(self.config.delay)
-                await page.wait_for_timeout(2000)
+                await page.wait_for_timeout(int(self.config.load_wait * 1000))
                 content = await page.content()
                 await page.close()
                 return content

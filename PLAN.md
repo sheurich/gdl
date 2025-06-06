@@ -553,15 +553,17 @@ The CLI tool should accept various inputs to control its behavior:
     * GROUP_URL: The full URL of the public Google Group to be scraped (e.g., https://groups.google.com/a/groups.cabforum.org/g/validation).
     * OUTPUT_FILE: The file path where the resulting mbox file will be saved.
 * **Optional Arguments:**
-    * --limit &lt;N>: An integer to specify the maximum number of conversation threads or messages to fetch.
-    * --start-date &lt;YYYY-MM-DD>: To fetch messages posted on or after this date.
-    * --end-date &lt;YYYY-MM-DD>: To fetch messages posted on or before this date.
-    * --delay &lt;seconds>: A float specifying the delay (in seconds) between HTTP requests to be polite to the server.
-    * --user-agent &lt;string>: Allows the user to specify a custom User-Agent string for HTTP requests.
-    * --max-retries &lt;N>: Number of times to retry a failed request.
-    * --log-level &lt;LEVEL>: Set the logging verbosity (e.g., DEBUG, INFO, WARNING, ERROR).
-    * --headless &lt;true/false>: If using Playwright, whether to run the browser in headless mode (default should be true).
-    * --text-format &lt;html/markdown/plaintext>: Specify the desired format for message bodies in the mbox file (default to HTML to preserve original, or offer cleaning options).
+* --limit &lt;N>: Maximum number of threads to fetch *(default: unlimited).* 
+* --start-date &lt;YYYY-MM-DD>: To fetch messages posted on or after this date.
+* --end-date &lt;YYYY-MM-DD>: To fetch messages posted on or before this date.
+* --delay &lt;seconds>: Delay between requests *(default: 1.0).* 
+* --load-wait &lt;seconds>: Extra wait after each page load *(default: 2.0).* 
+* --user-agent &lt;string>: Custom User-Agent header *(default: built-in Chrome UA).* 
+* --max-retries &lt;N>: Retry a failed request up to N times *(default: 3).* 
+* --log-level &lt;LEVEL>: Logging verbosity *(default: INFO).* 
+* --headless &lt;true/false>: Run the browser in headless mode *(default: true).* 
+* --text-format &lt;html/markdown/plaintext>: Format of message bodies *(default: HTML).* 
+* --concurrency &lt;N>: Number of threads to fetch concurrently *(default: 1).* 
 
 
 ### 6.3. Python CLI Libraries: argparse vs. Click
