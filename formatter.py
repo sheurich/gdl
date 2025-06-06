@@ -15,12 +15,15 @@ from parser import MessageData, ThreadData
 def _make_msg(message: MessageData, group_email: str, text_format: str) -> mailbox.mboxMessage:
     msg = mailbox.mboxMessage()
     ts = message.timestamp
-    timestamp = time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime(ts))
-    msg.set_unixfrom(f"From {message.sender} {timestamp}")
+    ts_struct = time.gmtime(ts)
+    rfc822_ts = time.strftime("%a, %d %b %Y %H:%M:%S +0000", ts_struct)
+    # Set both the envelope "From " line and standard Date header
+    msg.set_from(message.sender, ts_struct)
+    msg.set_unixfrom(f"From {message.sender} {time.asctime(ts_struct)}")
     msg["From"] = message.sender
     msg["To"] = group_email
     msg["Subject"] = message.subject
-    msg["Date"] = timestamp
+    msg["Date"] = rfc822_ts
     msg["Message-ID"] = f"<{message.message_id}@scraped.local>"
     if message.parent_id:
         msg["In-Reply-To"] = f"<{message.parent_id}@scraped.local>"
