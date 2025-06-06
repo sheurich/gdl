@@ -856,6 +856,7 @@ The repository now contains a minimal proof-of-concept scraper implemented in Py
 - `cli.py` – a Click-based command-line entry point.
 - `fetcher.py` – handles page retrieval with Playwright and polite retry logic.
 - `parser.py` – parses Google Groups pages, extracting threads and messages from the ds:6 data structure.
+- Parsing now consolidates multiple `ds:6` blocks to avoid missing messages.
 - `formatter.py` – converts parsed messages into an mbox file via the `mailbox` module.
 - `README.md` – explains setup using `uv`, installing Playwright, and notes the scraping disclaimer.
 - `make_full_url` helper in `cli.py` constructs absolute thread URLs so Playwright receives valid addresses.
@@ -869,6 +870,7 @@ This code now paginates through thread listings to fetch many threads and produc
 - Expand polite scraping features and exception handling.
 - Add more comprehensive unit and integration tests.
 - Document limitations and maintenance expectations.
+- Keep this document, `README.md`, and `AGENTS.md` updated when behaviour changes.
 
 ### Basic testing
 

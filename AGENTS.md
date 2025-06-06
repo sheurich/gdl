@@ -10,3 +10,4 @@ Coding Guidelines for Agents
   break when Google Groups changes. Update selectors in `parser.py` with care.
 - **Documentation**: Update both `README.md` and `PLAN.md` when the project
   gains features or behaviour changes.
+- After each iteration, revise this file, `README.md`, and `PLAN.md` if new insights or features are added.

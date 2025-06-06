@@ -60,3 +60,8 @@ Alternatively, install the dependencies and run `pytest` directly:
 pip install -r requirements.txt
 pytest
 ```
+
+### Development Notes
+
+- The parser extracts the last `ds:6` script block found in each page to ensure all messages are captured.
+- When extending functionality, update this README, `AGENTS.md`, and `PLAN.md` so future contributors understand recent changes.
