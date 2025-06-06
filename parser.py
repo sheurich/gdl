@@ -45,10 +45,12 @@ class ThreadData:
 
 
 def _extract_ds6(html: str) -> list:
-    match = DS6_RE.search(html)
-    if not match:
+    matches = DS6_RE.findall(html)
+    if not matches:
         raise ValueError("ds:6 block not found")
-    return json.loads(match.group(1))
+    # Some pages include multiple ds:6 blocks. The last block usually
+    # contains the most complete data, so return that one.
+    return json.loads(matches[-1])
 
 
 def parse_thread_list(html: str) -> tuple[list[str], str | None]:

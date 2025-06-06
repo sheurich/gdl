@@ -8,6 +8,14 @@ def test_extract_ds6():
     assert _extract_ds6(html) == [["x"]]
 
 
+def test_extract_ds6_multiple_blocks():
+    html = (
+        "<script>AF_initDataCallback({key: 'ds:6', isError: false, data:[[\"x\"]], sideChannel:{}});</script>"
+        "<script>AF_initDataCallback({key: 'ds:6', isError: false, data:[[\"y\"]], sideChannel:{}});</script>"
+    )
+    assert _extract_ds6(html) == [["y"]]
+
+
 def test_parse_thread_list_token():
     html = (
         "<script>AF_initDataCallback({key: 'ds:6', isError: false, "
