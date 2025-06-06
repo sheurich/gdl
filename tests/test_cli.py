@@ -48,7 +48,6 @@ def test_concurrency_option(monkeypatch, tmp_path):
     assert result.exit_code == 0
     assert sem_values == [2]
 
-
 def test_load_wait_option(monkeypatch, tmp_path):
     configs = []
 
@@ -81,4 +80,3 @@ def test_load_wait_option(monkeypatch, tmp_path):
     result = runner.invoke(cli.cli, ["http://example.com", "--load-wait", "0.5", "--output", str(out_file)])
     assert result.exit_code == 0
     assert configs and abs(configs[0].load_wait - 0.5) < 1e-6
-

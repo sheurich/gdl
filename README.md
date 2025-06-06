@@ -47,7 +47,14 @@ educational purposes only.
 
 ### Running Tests
 
-Install the dependencies from `requirements.txt` and run `pytest`:
+Run the unit tests without modifying your environment using
+[`uv`](https://github.com/astral-sh/uv):
+
+```bash
+uv run --with-requirements=requirements.txt pytest
+```
+
+Alternatively, install the dependencies and run `pytest` directly:
 
 ```bash
 pip install -r requirements.txt
