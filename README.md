@@ -18,6 +18,7 @@ Common options include:
 - `--user-agent STRING` – custom User-Agent header.
 - `--max-retries N` – retry a failed request up to N times.
 - `--headless/--no-headless` – toggle headless browser mode.
+- `--concurrency N` – number of threads to fetch concurrently.
 - `--log-level LEVEL` – logging verbosity (e.g. INFO, DEBUG).
 
 ### Setup
