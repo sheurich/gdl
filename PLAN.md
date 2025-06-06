@@ -562,6 +562,7 @@ The CLI tool should accept various inputs to control its behavior:
     * --log-level &lt;LEVEL>: Set the logging verbosity (e.g., DEBUG, INFO, WARNING, ERROR).
     * --headless &lt;true/false>: If using Playwright, whether to run the browser in headless mode (default should be true).
     * --text-format &lt;html/markdown/plaintext>: Specify the desired format for message bodies in the mbox file (default to HTML to preserve original, or offer cleaning options).
+    * --concurrency &lt;N>: Number of threads to fetch concurrently.
 
 
 ### 6.3. Python CLI Libraries: argparse vs. Click
