@@ -882,7 +882,11 @@ This writes `group_archive.mbox` in the current directory. To verify that core
 helpers still behave as expected, run the unit tests:
 
 ```bash
-pip install -r requirements.txt  # or use uv
+# run tests in an ephemeral environment
+uv run --with-requirements=requirements.txt pytest
+
+# or install locally and run
+pip install -r requirements.txt
 pytest
 ```
 
