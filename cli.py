@@ -44,8 +44,10 @@ def make_full_url(base_url: str, thread_path: str) -> str:
 @click.option("--log-level", default="INFO", show_default=True, help="Logging level")
 def cli(group_url: str, output_file: str, limit: int | None, delay: float, user_agent: str | None, max_retries: int, headless: bool, text_format: str, concurrency: int, log_level: str) -> None:
     """Scrape a public Google Group and output an mbox file."""
-    logging.basicConfig(level=getattr(logging, log_level.upper(
-    ), logging.INFO), format="%(levelname)s: %(message)s")
+    logging.basicConfig(
+        level=getattr(logging, log_level.upper(), logging.INFO),
+        format="%(levelname)s: %(message)s",
+    )
     config = FetcherConfig(delay=delay, user_agent=user_agent or FetcherConfig.user_agent,
                            max_retries=max_retries, headless=headless)
 
