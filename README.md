@@ -14,10 +14,12 @@ Common options include:
 - `--output PATH` – where to write the resulting mbox file.
 - `--limit N` – maximum number of threads to fetch (omit to fetch all).
 - `--delay SECONDS` – polite delay between requests.
+- `--load-wait SECONDS` – extra wait after each page load.
 - `--text-format {html,markdown,plaintext}` – format of message bodies.
 - `--user-agent STRING` – custom User-Agent header.
 - `--max-retries N` – retry a failed request up to N times.
 - `--headless/--no-headless` – toggle headless browser mode.
+- `--concurrency N` – number of threads to fetch concurrently.
 - `--log-level LEVEL` – logging verbosity (e.g. INFO, DEBUG).
 
 ### Setup
