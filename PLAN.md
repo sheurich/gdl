@@ -557,6 +557,7 @@ The CLI tool should accept various inputs to control its behavior:
     * --start-date &lt;YYYY-MM-DD>: To fetch messages posted on or after this date.
     * --end-date &lt;YYYY-MM-DD>: To fetch messages posted on or before this date.
     * --delay &lt;seconds>: A float specifying the delay (in seconds) between HTTP requests to be polite to the server.
+    * --load-wait &lt;seconds>: Additional wait time after each page load to ensure dynamic content is rendered.
     * --user-agent &lt;string>: Allows the user to specify a custom User-Agent string for HTTP requests.
     * --max-retries &lt;N>: Number of times to retry a failed request.
     * --log-level &lt;LEVEL>: Set the logging verbosity (e.g., DEBUG, INFO, WARNING, ERROR).

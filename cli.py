@@ -36,20 +36,26 @@ def make_full_url(base_url: str, thread_path: str) -> str:
     help="Limit number of threads",
 )
 @click.option("--delay", type=float, default=1.0, show_default=True, help="Delay between requests in seconds")
+@click.option("--load-wait", type=float, default=2.0, show_default=True, help="Extra wait after page load in seconds")
 @click.option("--user-agent", default=None, help="Custom User-Agent string")
 @click.option("--max-retries", type=int, default=3, show_default=True, help="Max retries on request failures")
 @click.option("--headless/--no-headless", default=True, show_default=True, help="Run browser in headless mode")
 @click.option("--text-format", type=click.Choice(["html", "markdown", "plaintext"]), default="html", show_default=True, help="Format for message bodies")
 @click.option("--concurrency", type=int, default=1, show_default=True, help="Number of threads to fetch concurrently")
 @click.option("--log-level", default="INFO", show_default=True, help="Logging level")
-def cli(group_url: str, output_file: str, limit: int | None, delay: float, user_agent: str | None, max_retries: int, headless: bool, text_format: str, concurrency: int, log_level: str) -> None:
+def cli(group_url: str, output_file: str, limit: int | None, delay: float, load_wait: float, user_agent: str | None, max_retries: int, headless: bool, text_format: str, concurrency: int, log_level: str) -> None:
     """Scrape a public Google Group and output an mbox file."""
     logging.basicConfig(
         level=getattr(logging, log_level.upper(), logging.INFO),
         format="%(levelname)s: %(message)s",
     )
-    config = FetcherConfig(delay=delay, user_agent=user_agent or FetcherConfig.user_agent,
-                           max_retries=max_retries, headless=headless)
+    config = FetcherConfig(
+        delay=delay,
+        load_wait=load_wait,
+        user_agent=user_agent or FetcherConfig.user_agent,
+        max_retries=max_retries,
+        headless=headless,
+    )
 
     async def run() -> None:
         threads: List[ThreadData] = []
