@@ -54,3 +54,18 @@ def test_from_line_contains_sender_and_timestamp(tmp_path):
     assert f"From alice@example.com {time.asctime(time.gmtime(ts1))}" in data
     assert f"From bob@example.com {time.asctime(time.gmtime(ts2))}" in data
 
+
+def test_make_msg_markdown_content_type():
+    msg = _make_msg(
+        MessageData(
+            message_id="1",
+            sender="a@example.com",
+            timestamp=0,
+            subject="sub",
+            body_html="<b>Hello</b>",
+        ),
+        group_email="group@example.com",
+        text_format="markdown",
+    )
+    assert msg["Content-Type"].startswith("text/plain")
+    assert "**Hello**" in msg.get_payload(decode=True).decode()

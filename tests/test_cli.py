@@ -80,3 +80,10 @@ def test_load_wait_option(monkeypatch, tmp_path):
     result = runner.invoke(cli.cli, ["http://example.com", "--load-wait", "0.5", "--output", str(out_file)])
     assert result.exit_code == 0
     assert configs and abs(configs[0].load_wait - 0.5) < 1e-6
+
+
+def test_make_full_url_cases():
+    base = "https://groups.google.com/g/test"
+    assert cli.make_full_url(base, "c/topic") == "https://groups.google.com/g/test/c/topic"
+    assert cli.make_full_url(base, "/forum/123") == "https://groups.google.com/forum/123"
+    assert cli.make_full_url(base, "https://example.com/x") == "https://example.com/x"

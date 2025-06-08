@@ -54,6 +54,9 @@ Run the unit tests without modifying your environment using
 uv run --with-requirements=requirements.txt pytest
 ```
 
+Tests run automatically on every push via the GitHub Actions workflow in
+`.github/workflows/tests.yml`.
+
 Alternatively, install the dependencies and run `pytest` directly:
 
 ```bash
