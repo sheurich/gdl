@@ -66,48 +66,90 @@ def parse_thread_list(html: str) -> tuple[list[str], str | None]:
 def parse_thread(html: str) -> ThreadData:
     """Parse a single thread page and return structured data."""
     data = _extract_ds6(html)
+    thread_id = "unknown_thread_id"
+    thread_subject = "Unknown Subject"
 
     try:
-        thread_metadata_source = data[2][0][0][0]
-        thread_id = str(thread_metadata_source[1])
-        thread_subject = str(thread_metadata_source[5])
+        # Attempt to get metadata from the head of the first message pair,
+        # assuming data[2][0][0] is a list of [head, body] message pairs.
+        if (isinstance(data, list) and len(data) > 2 and
+            isinstance(data[2], list) and len(data[2]) > 0 and
+            isinstance(data[2][0], list) and len(data[2][0]) > 0 and
+            isinstance(data[2][0][0], list) and len(data[2][0][0]) >= 2 and # data[2][0][0] is the first message pair [head, body]
+            isinstance(data[2][0][0][0], list) and len(data[2][0][0][0]) > 5): # data[2][0][0][0] is head of first message
+
+            first_message_head = data[2][0][0][0] # Path to head of the first message
+            thread_id = str(first_message_head[1])
+            thread_subject = str(first_message_head[5])
+            logger.info("Extracted thread metadata from first message head.")
+        else:
+            # Fallback to a previously assumed path if the above structure isn't met
+            logger.warning("Primary metadata path not found or incomplete, trying legacy path.")
+            # This legacy path assumes data[2][0][0][0] is the first head element of a flat list of messages.
+            # This was the original assumption before differentiating message list structures.
+            legacy_thread_metadata_source = data[2][0][0][0]
+            if isinstance(legacy_thread_metadata_source, list) and len(legacy_thread_metadata_source) > 5:
+                 thread_id = str(legacy_thread_metadata_source[1])
+                 thread_subject = str(legacy_thread_metadata_source[5])
+                 logger.info("Extracted thread metadata from legacy path (e.g. flat list's first head).")
+            else:
+                logger.warning("Legacy metadata path also not viable. Using defaults.")
+                # Defaults already set
+
     except (IndexError, TypeError) as e:
         logger.warning(f"Could not extract thread metadata: {e}. Using defaults.")
-        thread_id = "unknown_thread_id" # Or derive from URL if possible later
-        thread_subject = "Unknown Subject"
+        # Defaults already set
 
     messages: List[MessageData] = []
+    candidate_list = None
 
-    candidate_list = None # Renamed from message_list_source for clarity before determining iterable_messages
-    potential_paths_to_try = []
+    # Populate potential_paths_to_try in a specific order of preference
+    raw_potential_paths = []
     try:
-        if len(data) > 2 and len(data[2]) > 0 and len(data[2][0]) > 1 and isinstance(data[2][0][1], list):
-            potential_paths_to_try.append(data[2][0][1])
-        if len(data) > 1 and isinstance(data[1], list):
-            potential_paths_to_try.append(data[1])
-        if len(data) > 0 and isinstance(data[0], list):
-            potential_paths_to_try.append(data[0])
-        if len(data) > 2 and isinstance(data[2], list) : # Could data[2] itself be the list?
-            # Avoid re-adding if data[2][0][1] was from data[2]
-            if not (len(data[2]) > 0 and len(data[2][0]) > 1 and data[2][0][1] is data[2]):
-                 potential_paths_to_try.append(data[2])
+        if isinstance(data, list) and len(data) > 2 and isinstance(data[2], list) and len(data[2]) > 0:
+            path_2_0 = data[2][0]
+            if isinstance(path_2_0, list):
+                if len(path_2_0) > 1 and isinstance(path_2_0[1], list):
+                    raw_potential_paths.append(path_2_0[1]) # data[2][0][1]
+                raw_potential_paths.append(path_2_0)         # data[2][0]
+        if isinstance(data, list) and len(data) > 1 and isinstance(data[1], list):
+            raw_potential_paths.append(data[1])
+        if isinstance(data, list) and len(data) > 0 and isinstance(data[0], list):
+            raw_potential_paths.append(data[0])
+        if isinstance(data, list) and len(data) > 2 and isinstance(data[2], list):
+            raw_potential_paths.append(data[2])
     except (IndexError, TypeError):
-        pass # Path doesn't exist in a way we can use
+        logger.warning("Error while populating potential paths for message list.", exc_info=True)
 
-    for path_candidate in potential_paths_to_try: # Renamed candidate to path_candidate for clarity
-        if path_candidate and isinstance(path_candidate, list) and len(path_candidate) > 0:
-            # Heuristic: check if elements look like messages (are lists/tuples themselves)
-            if isinstance(path_candidate[0], (list, tuple)):
-                logger.info(f"Identified candidate message list source with {len(path_candidate)} items.")
-                candidate_list = path_candidate
-                break
-            # Adding a check if path_candidate itself is a list of lists, even if its first element is not a list/tuple
-            # This could happen if the list is empty but still a valid container for messages.
-            elif all(isinstance(item, (list,tuple)) for item in path_candidate):
-                 logger.info(f"Identified candidate message list source (list of lists) with {len(path_candidate)} items.")
-                 candidate_list = path_candidate
-                 break
+    # Deduplicate potential paths (list of lists is not hashable, so simple object ID check)
+    seen_ids = set()
+    potential_paths_to_try = []
+    for p_list in raw_potential_paths:
+        if id(p_list) not in seen_ids: # Check if this exact list object has been seen
+             if isinstance(p_list, list): # Ensure it's actually a list before adding
+                potential_paths_to_try.append(p_list)
+                seen_ids.add(id(p_list))
 
+    # Attempt 1: Find a list of [head,body] pairs.
+    for path_candidate in potential_paths_to_try:
+        if (path_candidate and isinstance(path_candidate, list) and len(path_candidate) > 0 and
+            isinstance(path_candidate[0], list) and len(path_candidate[0]) >= 2 and # First item is a pair
+            isinstance(path_candidate[0][0], list)): # And the head of that first pair is a list
+            logger.info(f"Prioritized: Identified candidate message list (list of pairs) with {len(path_candidate)} pairs at path.")
+            candidate_list = path_candidate
+            break
+
+    if not candidate_list: # If no list of pairs was found, try the broader check (original heuristic)
+        for path_candidate in potential_paths_to_try:
+            if path_candidate and isinstance(path_candidate, list) and len(path_candidate) > 0:
+                if isinstance(path_candidate[0], (list, tuple)): # Original check: first element is a list/tuple
+                    logger.info(f"Fallback: Identified candidate message list (broader check) with {len(path_candidate)} items at path.")
+                    candidate_list = path_candidate
+                    break
+                elif all(isinstance(item, (list,tuple)) for item in path_candidate): # Original list of lists check
+                     logger.info(f"Fallback: Identified candidate message list source (list of lists) with {len(path_candidate)} items at path.")
+                     candidate_list = path_candidate
+                     break
 
     iterable_messages = None
     if candidate_list:
