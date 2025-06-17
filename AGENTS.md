@@ -203,6 +203,49 @@ selectors accordingly. Run the tests before committing.
 **Solution**: Ensure browsers are installed with `playwright install` and check
 network connectivity. Increase the `--load-wait` option if pages load slowly.
 
+## Key Lessons & Strategies for Web Scraping
+
+Reflecting on the development and debugging of this scraper, particularly in handling Google Groups' complex and evolving structure, several key strategies and lessons have emerged:
+
+1.  **Iterative Data Structure Discovery:**
+    *   When dealing with undocumented or frequently changing data structures (like JSON embedded in HTML), initial assumptions about data paths are often incorrect.
+    *   Employ an iterative approach:
+        *   Start with broad attempts to locate data sections.
+        *   Log extensively the structure of what's found (e.g., data type, length, a sample of the first few elements).
+        *   Use test runs, even on small parts of the data, to gather this structural information.
+        *   Refine parsing logic based on these concrete observations. This iterative process was crucial in successfully increasing the number of messages parsed by this tool.
+    *   Consider reconnaissance steps in planning for scraping tasks, specifically to map out target data structures.
+
+2.  **Targeted Testing Capabilities:**
+    *   While broad testing (e.g., on an entire group with a small limit) is useful, the ability to target highly specific test cases (e.g., a single known long URL or a page with unusual structures) is invaluable for efficient debugging.
+    *   For this project, adding a `--thread-url` option to `cli.py` allowed focused testing on problematic or representative threads, significantly speeding up the diagnostic and validation process.
+
+3.  **Defensive Parsing and Graceful Degradation:**
+    *   Web data is often inconsistent. Robust parsers should anticipate missing fields, unexpected data types, or structural variations.
+    *   Implement defensive coding practices:
+        *   Wrap data access (dictionary key lookups, list indexing) in try-except blocks.
+        *   Provide sensible default values for fields when extraction fails, allowing the rest of the data item to be processed.
+        *   Log these partial failures clearly to aid in identifying patterns or areas for parser improvement.
+    *   This principle of graceful degradation ensures that the scraper can extract maximum value even from imperfect data, rather than crashing on the first anomaly.
+
+4.  **Separation of Concerns in Parsing Logic:**
+    *   Complex parsing tasks benefit from clear separation of responsibilities.
+    *   For instance, in `parser.py`, decoupling the logic for:
+        *   Extracting the main JSON blob from HTML.
+        *   Identifying the primary list of data items (e.g., messages) within that blob.
+        *   Iterating through this list.
+        *   Parsing individual fields from each item.
+    *   This separation makes the code easier to understand, debug, and maintain, as changes to one aspect (e.g., the path to the message list) are less likely to break others (e.g., field extraction within a message).
+
+5.  **Verbose and Specific Logging:**
+    *   When direct debugging of live or fetched web content is challenging, detailed logging becomes a primary diagnostic tool.
+    *   Logs should be specific about:
+        *   Which data source or path is being attempted.
+        *   The outcome of heuristic choices (e.g., "Using inner list from candidate...").
+        *   Errors encountered during parsing specific fields, including the problematic data if feasible (or its type/structure).
+        *   Summary information (e.g., "Successfully parsed X messages for thread Y").
+    *   Well-placed and informative logs were critical for understanding the parser's behavior and iteratively refining it.
+
 ## Reference Resources
 
 - [Playwright Python](https://playwright.dev/python/)
